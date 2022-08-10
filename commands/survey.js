@@ -1,5 +1,8 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-var formatDistanceToNow = require("date-fns/formatDistanceToNow");
+const formatDistanceToNow = require("date-fns/formatDistanceToNow");
+const { th } = require("date-fns/locale");
+const {Constants} = require('discord.js');
+
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -66,10 +69,12 @@ module.exports = {
 };
 
 
-function processMessages(interaction, members, message){
+async function processMessages(interaction, members, message){
   let counter = 0;
+  const closedDM = []
   const interval = setInterval(async () => {
     const { roles, id, user } = members[counter];
+    const channel = interaction.client.channels.cache.get(interaction.channelId);
     const targetUser = await interaction.client.users.fetch(id);
     targetUser
       .send(message)
@@ -78,8 +83,34 @@ function processMessages(interaction, members, message){
           `Message Sent to ${targetUser.username}#${targetUser.discriminator}`
         )
       )
-      .catch((e) => console.error(`Couldn't DM member ${user}`));
+      .catch((e) => {
+        console.error(`Couldn't DM member ${user}`)
+        closedDM.push(targetUser)
+      });
     counter++;
-    if (counter >= members.length) clearInterval(interval);
+    if (counter >= members.length) {
+      clearInterval(interval);
+      tagUsers(closedDM, channel, message)
+    }
   }, 60000);
+}
+
+async function tagUsers(users, channel, message, messageSize=50){
+  const thread = await channel.threads.create({
+    name: `Survay thread`,
+    autoArchiveDuration: 60,
+    reason: `Needed a separate thread people with closed DMs`,
+  });
+  await thread.send(message)
+  const interval = setInterval(async () => {
+    if (users.length < 1)
+      return clearInterval(interval);
+
+    const message = users.splice(0, messageSize).map(t => `<@${t.id}>`).join(' ')
+    await thread.send(message)
+    console.log(
+      `Message Sent to ${message}`
+    )
+  }, 60000)
+
 }
