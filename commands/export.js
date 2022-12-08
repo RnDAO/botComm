@@ -351,11 +351,11 @@ module.exports = {
           })
           .then((r) => {
             // remove temporary files
-            fs.rmSync(filename, { recursive: true });
-            fs.unlinkSync(zipFile);
+            fs.rmSync('./' + filename, { recursive: true, force: true});
+            fs.unlinkSync('./' + zipFile);
             if(messages.type === "channel") {
-              fs.unlinkSync("FailedChannelList.txt");
-              fs.unlinkSync("SucceedChannelList.txt");
+              fs.unlinkSync("./FailedChannelList.txt");
+              fs.unlinkSync("./SucceedChannelList.txt");
             }
           });
       }
