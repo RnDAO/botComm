@@ -1,12 +1,21 @@
 const { databaseService, rawInfoService, guildService } = require("tc-dbcomm");
-
+const mongoose = require("mongoose");
 // get database address
 const getDB = () => {
   const db_address = process.env.DB_ADDRESS;
   const db_user = process.env.DB_USER;
   const db_password = process.env.DB_PASSWORD;
-  const database = `mongodb://${db_user}:${db_password}@${db_address}/?authMechanism=DEFAULT&tls=false`;
+  const database = `mongodb://${db_user}:${db_password}@${db_address}`;
   return database;
+};
+
+const connectDB = async () => {
+  const database = getDB() + "/" + process.env.RnDAO;
+  await mongoose.set("strictQuery", false);
+  // Connect to MongoDB
+  await mongoose.connect(database).then(() => {
+    console.log("Connected to MongoDB!");
+  });
 };
 
 // get users with id and value
@@ -88,11 +97,7 @@ const insertMessages = async (guildID, messages) => {
 
 // fetch different guild settings from RnDAO server
 const fetchSettings = async () => {
-  const RnDAO = process.env.RnDAO;
-  const database = getDB();
-  const connection = databaseService.connectionFactory(RnDAO, database);
-  const settings = await guildService.fetchGuild(connection);
-  await connection.close();
+  const settings = await guildService.fetchGuild();
   return settings;
 };
 
@@ -104,8 +109,11 @@ const getRange = async (guildID) => {
   return range;
 };
 
+const updateGuild = guildService.updateGuildByGuildId;
 module.exports = {
   insertMessages,
   fetchSettings,
   getRange,
+  connectDB,
+  updateGuild,
 };

@@ -4,6 +4,8 @@ const {
   fetchSettings,
   getRange,
   insertMessages,
+  connectDB,
+  updateGuild,
 } = require("./database/dbservice.js");
 const { fetchMessages } = require("./action/export.js");
 
@@ -52,11 +54,26 @@ const fetch = async (setting) => {
   }
 };
 
+// check the bot is connected to the guilds and update status
+const checkBotStatus = async (settings) => {
+  const promises = settings.map(async (setting) => {
+    const { guildId } = setting;
+    const guild = client.guilds.cache.get(guildId);
+    if (!guild) {
+      setting.isDisconnected = true;
+      await updateGuild(guildId, setting);
+    }
+  });
+  return await Promise.all(promises);
+};
+
 const app = async () => {
   // fetch all guild settings
   await discordLogin();
+  await connectDB();
   const settings = await fetchSettings();
-  const promises = settings.map(async (setting) => {
+  await checkBotStatus(settings);
+  promises = settings.map(async (setting) => {
     const { guildId, name } = setting;
     const guild = client.guilds.cache.get(guildId);
     if (guild) {
