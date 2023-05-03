@@ -19,6 +19,7 @@ const connectDB = async () => {
       console.log("Connected to MongoDB!");
     })
     .catch((e) => {
+      Sentry.captureException(e)
       console.log(e);
     });
 };
@@ -32,6 +33,7 @@ const createConnection = (guildId) => {
     connectionMap[guildId] = connection;
     return connection;
   } catch (e) {
+    Sentry.captureException(e)
     console.log(e);
     return null;
   }
@@ -46,6 +48,7 @@ const removeConnection = (guildId) => {
       connectionMap[guildId] = null;
     }
   } catch (e) {
+    Sentry.captureException(e)
     return null;
   }
 };

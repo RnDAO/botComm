@@ -15,6 +15,7 @@ const {
 const Sentry = require("@sentry/node");
 
 const { Client, Intents } = require("discord.js");
+const { error } = require("node:console");
 require("dotenv").config();
 
 
@@ -68,6 +69,7 @@ const messageAction = async (setting) => {
     });
     return messages;
   } catch (e) {
+    Sentry.captureException(e)
     console.log(e);
     return [];
   }

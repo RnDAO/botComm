@@ -3,6 +3,7 @@ const {
   updateAccount,
   processMessages,
 } = require("../database/dbservice.js");
+const Sentry = require("@sentry/node");
 
 /**
  * @dev fetch messages by filter
@@ -52,6 +53,7 @@ const trackMessages = async (
             await Promise.all(threadPromises);
           }
         } catch (e) {
+          Sentry.captureException(e)
           // bot doesn't have access to channel.
           // console.log(e);
         }
@@ -73,6 +75,7 @@ const trackMessages = async (
       const messagesMap = await channel.messages.fetch(options);
       messages = Array.from(messagesMap, ([id, value]) => ({ id, value }));
     } catch (e) {
+      Sentry.captureException(e)
       // console.log(e);
     }
     if (messages.length === 0) break;
@@ -92,6 +95,7 @@ const trackMessages = async (
       const messagesMap = await channel.messages.fetch(options);
       messages = Array.from(messagesMap, ([id, value]) => ({ id, value }));
     } catch (e) {
+      Sentry.captureException(e)
       // console.log(e);
     }
     if (messages.length === 0) return sum_messages;
@@ -124,9 +128,11 @@ const sendDMtoUser = async (client, userId, message) => {
         );
       })
       .catch((e) => {
+        Sentry.captureException(e)
         throw e;
       });
   } catch (e) {
+    Sentry.captureException(e)
     console.log("Can't DM to user", e);
   }
 };
@@ -150,6 +156,7 @@ const updateChannelInfo = async (client, guildId) => {
       });
     }
   } catch (e) {
+    Sentry.captureException(e)
     console.log("Error in updating channel info", e);
   }
 };
@@ -168,6 +175,7 @@ const updateAccountInfo = async (client, guildId) => {
     });
     await Promise.all(promises);
   } catch (e) {
+    Sentry.captureException(e)
     console.log("Error in updating account info", e);
   }
 };
