@@ -12,8 +12,18 @@ const {
   updateAccountInfo,
 } = require("./action/export.js");
 
+const Sentry = require("@sentry/node");
+
 const { Client, Intents } = require("discord.js");
 require("dotenv").config();
+
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.SENTRY_ENV,
+
+  tracesSampleRate: 1.0,
+});
 
 const intents = new Intents(32767);
 const client = new Client({ intents });
